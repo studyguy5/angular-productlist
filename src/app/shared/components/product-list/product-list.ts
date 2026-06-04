@@ -1,11 +1,14 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-product-list',
-  imports: [],
+  imports: [ RouterLink, CurrencyPipe ],
   templateUrl: './product-list.html',
   styleUrl: './product-list.scss',
 })
+// hier custom Pipe erstellen
 export class ProductList {
   list = [
 {
