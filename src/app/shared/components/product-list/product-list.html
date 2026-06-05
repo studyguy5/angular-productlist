@@ -19,10 +19,10 @@
                 <td class="price">
                     @switch (true) {
                         @case(items.price > 1000000) {
-                            <span class="badge ok">{{ items.price / 1000000 | currency:'EUR'}} Mio.</span>
+                            <span class="badge ok">{{ items.price / 1000000 | customCurrency:'EUR'}} Mio.</span>
                         }
                         @case(items.price > 1000) {
-                            <span class="badge warning">{{ items.price / 1000 |currency:'EUR'}} tsd.</span>
+                            <span class="badge warning">{{ items.price / 1000 |customCurrency:'EUR'}} tsd.</span>
                         }
                         @case (items.price < 1000) {
                             <span class="badge error">{{ items.price }}€</span>
