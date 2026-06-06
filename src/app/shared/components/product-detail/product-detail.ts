@@ -22,18 +22,12 @@ ngOnInit() {
   let currentName = this.route.snapshot.paramMap.get('name') || "";
   if(currentName){
     this.productservice.setProductDetailByName(currentName);
-    this.detail = this.productservice.productDetail;
+    
   }
   };
-  detail = {
-    name: "",
-    description: "",
-    specs: "",
-    stock: 0,
-    price: 0
-  }
+  detail = this.productservice.productDetail;
 
   deleteDetail(){
-    this.detail.name = "";
+    this.detail.update(p => ({ ...p, name: "" }));
   }
 }
