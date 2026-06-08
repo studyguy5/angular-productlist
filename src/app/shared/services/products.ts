@@ -32,9 +32,9 @@ export class Products {
     if (tmpProduct) {
       this.productDetail.set(tmpProduct);
     }
-    setTimeout(() => {
-      this.productDetail.update(p => ({ ...p, description: "banana" }));
-    }, 2000);
+    // setTimeout(() => {
+    //   this.productDetail.update(p => ({ ...p, description: "banana" }));
+    // }, 2000);
   }
 
   productlist = signal<Product[]>([]);
