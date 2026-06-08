@@ -18,6 +18,7 @@ export class ProductEdit {
   productService = inject(Products)
   router = inject(Router);
   editForm = new FormGroup({
+    id: new FormControl(this.getProduct().id),
     name: new FormControl(this.getProduct().name, { validators: [Validators.required, Validators.minLength(3)] }),
     description: new FormControl(this.getProduct().description),
     stock: new FormControl(this.getProduct().stock, { validators: [Validators.required, Validators.min(0)] }),
@@ -28,6 +29,7 @@ export class ProductEdit {
   getProduct() {
     const detail = this.productService.productDetail();
     return {
+      id: detail.id,
       name: detail.name,
       description: detail.description,
       stock: detail.stock,
@@ -40,13 +42,14 @@ export class ProductEdit {
     console.log(this.editForm.value);
   
     let product: Product = {
+      id: this.editForm.value.id ?? 0,
       name: this.editForm.value.name ? this.editForm.value.name : 'n/a',
       description: this.editForm.value.description ? this.editForm.value.description : 'n/a',
       specs: "",
       stock: this.editForm.value.stock ? this.editForm.value.stock : 0,
       price: this.editForm.value.price ? this.editForm.value.price : 0
     }
-    this.productService.addProduct(product);
+    this.productService.editOneProduct(product);
     this.router.navigate(['']);
   }
 }

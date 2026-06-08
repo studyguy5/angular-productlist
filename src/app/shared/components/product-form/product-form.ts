@@ -27,6 +27,7 @@ onsubmit() {
   console.log(this.productForm.value);
 
   let product: Product = {
+    id: 0,
     name: this.productForm.value.name ? this.productForm.value.name : 'n/a',
     description: this.productForm.value.description ? this.productForm.value.description : 'n/a',
     specs: "",
