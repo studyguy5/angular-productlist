@@ -30,4 +30,8 @@ ngOnInit() {
   deleteDetail(){
     this.detail.update(p => ({ ...p, name: "" }));
   }
+
+  editProduct(){
+    
+  }
 }

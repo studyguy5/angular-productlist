@@ -1,9 +1,9 @@
 import { Injectable, signal } from '@angular/core';
 import { Product } from '../interfaces/product';
 
-// @Injectable({
-//   providedIn: 'root',
-// })
+@Injectable({
+  providedIn: 'root',
+})
 export class Products {
 
   // productDetail: Product = {
@@ -21,6 +21,11 @@ export class Products {
     stock: 0,
     price: 0
   })
+
+  addProduct(product: Product) {
+    this.productlist.update(p => [...p, product]);
+
+  }
 
   setProductDetailByName(name: string) {
     let tmpProduct = this.productlist().find(p => p.name == name);

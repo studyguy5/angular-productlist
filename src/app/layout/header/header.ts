@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-header',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })
@@ -13,10 +14,10 @@ export class Header {
 
   ngOnInit() {
     this.path = "";
-    if(this.path === ""){
-      this.btnText = "Zurück zur Übersicht";
-    }else{
+    if(this.path == ""){
       this.btnText = "Neues Produkt";
+    }else{
+      this.btnText = "Zurück zur Übersicht";
     }
   }
 }

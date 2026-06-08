@@ -20,7 +20,7 @@ export class CustomCurrencyPipe implements PipeTransform {
   imports: [ RouterLink, CustomCurrencyPipe],
   templateUrl: './product-list.html',
   styleUrl: './product-list.scss',
-  providers: [Products]
+  
 })
 
 
