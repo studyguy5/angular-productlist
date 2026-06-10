@@ -21,16 +21,18 @@ router = inject(Router);
 
 
 ngOnInit() {
-  let currentName = this.route.snapshot.paramMap.get('name') || "";
-  if(currentName){
-    this.productservice.setProductDetailByName(currentName);
+  let currentid: number = Number(this.route.snapshot.paramMap.get('id'))
+  if(currentid){
+    this.productservice.setProductDetailByid(currentid);
     
   }
   };
   detail = this.productservice.productDetail;
 
-  deleteDetail(){
-    this.detail.update(p => ({ ...p, name: "" }));
+  async deleteDetail(){  
+  this.productservice.deleteProduct(this.detail().id);
+  
+  this.router.navigate(['']);
   }
 
   editProduct(){

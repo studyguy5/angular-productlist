@@ -1,11 +1,97 @@
 import { Injectable, signal } from '@angular/core';
 import { Product } from '../interfaces/product';
+import { createClient } from '@supabase/supabase-js'
+import { RealtimeChannel } from '@supabase/supabase-js';
+import { ProductModel } from '../models/productmodels';
+
 
 @Injectable({
   providedIn: 'root',
 })
 export class Products {
 
+  productlistInsertChannel;
+  productlistDeleteChannel;
+  productlistUpdateChannel;
+  // superbase function to connect and to live update==========================================================================
+  channel: RealtimeChannel | undefined
+  // Create a single supabase client for interacting with your database
+  supabase = createClient('https://jhalmxasnqoxubitftsl.supabase.co', 'sb_publishable_xqmPPkgnlRFfAbZbsmWNTg_cmrFXuty')
+
+  async getProducts() {
+    let { data: productlist, error } = await this.supabase
+      .from('products')
+      .select('*')
+    console.log(productlist);
+    if (!productlist) return
+    this.productlist.set(productlist)
+  }
+
+  setRealtimeChannel() {
+    if (this.supabase) {
+      this.channel = this.supabase.channel('custom-all-channel')
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'products' }, () => {
+            this.getProducts()
+          }).subscribe()
+    }
+  }
+  constructor() {
+    this.getProducts();
+    this.setRealtimeChannel();
+
+    this.productlistInsertChannel = this.supabase.channel('custom-insert-channel')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'products' },
+        (payload) => {
+          let tmpProduct = new ProductModel(payload.new);
+          this.productlist.update(p => [...p, tmpProduct]);
+        }
+      )
+      .subscribe()
+
+
+
+    this.productlistDeleteChannel = this.supabase.channel('custom-delete-channel')
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'products' },
+        (payload) => {
+          console.log('Change received!', payload)
+          let tmpProductID = payload.old['id'];
+          this.productlist.update(p => p.filter(p => p.id !== tmpProductID));
+        }
+      )
+      .subscribe()
+
+
+    this.productlistUpdateChannel = this.supabase.channel('custom-update-channel')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'products' },
+        (payload) => {
+          console.log('Change received!', payload)
+          let tmpProductID = payload.new['id'];
+          this.productlist.update(tmpProductID);
+        }
+      )
+      .subscribe()
+  }
+
+  ngOnDestroy() {
+    this.supabase.removeChannel(this.productlistInsertChannel);
+    this.supabase.removeChannel(this.productlistDeleteChannel);
+    this.supabase.removeChannel(this.productlistUpdateChannel);
+  }
+
+  async deleteProduct(id: number) {
+    const { error } = await this.supabase
+      .from('products')
+      .delete()
+      .eq('id', id)
+  }
+  // ============================================================================================================================
   // productDetail: Product = {
   //   name: "",
   //   description: "",
@@ -14,91 +100,58 @@ export class Products {
   //   price: 0
   // }
 
+
+
   productDetail = signal<Product>({
     id: 0,
     name: "",
-    description: "",
+    description: "n",
     specs: "",
     stock: 0,
     price: 0
   })
 
-  addProduct(product: Product):void {
-    this.productlist.update(p => [...p, product]);
+  async addProduct(product: ProductModel) {
+    const product_data = product.getCleanJson();
+    const { data, error } = await this.supabase
+      .from('products')
+      .insert([
+        product_data,
+      ])
+      .select()
+
   }
 
-  editOneProduct(product: Product):void {
+  async editOneProduct(product: Product) {
     let productExists: number = this.productlist().findIndex(p => p.id === product.id);
-    if (productExists !== -1) {
-      this.productlist.update(list => list.map((p, index) => index === productExists ? product : p));
-    }
+    const { data, error } = await this.supabase
+      .from('products')
+      .update([
+        // {data:
+        // this.productDetail()}
+        {
+          name: product.name,
+          description: product.description,
+          specs: product.specs,
+          stock: product.stock,
+          price: product.price
+        }
+      ])
+      .eq('id', product.id)
+    // if (productExists !== -1) {
+    //   this.productlist.update(list => list.map((p, index) => index === productExists ? product : p));
+    // }
     // this.productlist.update(p => [...p, product]);
   }
 
-  setProductDetailByName(name: string) {
-    let tmpProduct = this.productlist().find(p => p.name == name);
+  setProductDetailByid(id: number): void {
+    let tmpProduct = this.productlist().find(p => p.id == id);
     if (tmpProduct) {
       this.productDetail.set(tmpProduct);
     }
-    // setTimeout(() => {
-    //   this.productDetail.update(p => ({ ...p, description: "banana" }));
-    // }, 2000);
   }
 
   productlist = signal<Product[]>([]);
 
-  constructor() {
-    this.productlist.set([
-      {
-        "id": 1,
-        "name": "Gaming Maus",
-        "description": "Eine ergonomische Gaming-Maus mit hoher Präzision und einstellbarer DPI. Ideal für FPS- und MOBA-Spiele, bietet sie eine langlebige Bauweise und komfortable Seitentasten für schnelles Reagieren.",
-        "specs": "dpi: 6400, cable length: 1.8m, color: Schwarz",
-        "stock": 120,
-        "price": 2500000
-      },
-      {
-        "id": 2,
-        "name": "USB-C Kabel",
-        "description": "Robustes Ladekabel für Smartphones, Tablets und Laptops. Unterstützt schnelles Laden und Datenübertragung. Perfekt für den täglichen Einsatz zu Hause, im Büro oder unterwegs.",
-        "specs": "length: 1m, color: Weiß, type: USB-C zu USB-A",
-        "stock": 300,
-        "price": 4800
-      },
-      {
-        "id": 3,
-        "name": "Mechanische Tastatur",
-        "description": "Hochwertige mechanische Tastatur mit RGB-Hintergrundbeleuchtung. Die schnellen Switches sorgen für präzise Eingaben und langen Schreibkomfort. Ideal für Gamer und Vielschreiber.",
-        "specs": "switches: Red, connection: USB, color: Schwarz",
-        "stock": 85,
-        "price": 79.90
-      },
-      {
-        "id": 4,
-        "name": "HDMI Kabel",
-        "description": "Ein zuverlässiges HDMI 2.1 Kabel, das gestochen scharfe Bilder in 4K und 8K Qualität liefert. Geeignet für Fernseher, Monitore, Konsolen und Projektoren. Unterstützt HDR und hohe Bildwiederholraten.",
-        "specs": "length: 2m, version: 2.1, color: Schwarz",
-        "stock": 250,
-        "price": 12.99
-      },
-      {
-        "id": 5,
-        "name": "Externe SSD",
-        "description": "Leistungsstarke und kompakte externe SSD für schnelle Datenübertragung. Perfekt für große Dateien, Gaming-Bibliotheken oder als Backup-Lösung. Stoßfestes Gehäuse für den mobilen Einsatz.",
-        "specs": "capacity: 1TB, interface: USB 3.2, color: Silber",
-        "stock": 60,
-        "price": 109.99
-      },
-      {
-        "id": 6,
-        "name": "Bluetooth Kopfhörer",
-        "description": "Kabellose Over-Ear Kopfhörer mit klaren Höhen und kräftigem Bass. Dank 20 Stunden Akkulaufzeit und komfortabler Ohrpolster ideal für lange Musik- oder Gaming-Sessions.",
-        "specs": "battery life: 20h, color: Schwarz, connection: Bluetooth 5.0",
-        "stock": 150,
-        "price": 59.95
-      }
-    ]
-    )
-  }
 
 }

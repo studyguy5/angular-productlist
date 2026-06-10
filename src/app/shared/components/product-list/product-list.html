@@ -10,9 +10,9 @@
             </tr>
         </thead>
         <tbody>
-            @for(items of list(); track items.name; let i = $index){
+            @for(items of list(); track items.id; let i = $index){
 
-            <tr [routerLink]="['detail', items.name]" role="link">
+            <tr [routerLink]="['detail', items.id]" role="link">
                 <td>{{ i + 1 }}-{{ items.name }}</td>
                 <td>{{ items.description }}</td>
                 <td><span class="badge ok">{{ items.stock }}</span></td>
